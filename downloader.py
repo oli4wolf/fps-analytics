@@ -1,6 +1,8 @@
 import requests
 import concurrent.futures
 
+from datetime import datetime, timedelta
+
 from regexFilter import extract_data
 
 #Unused function
@@ -30,11 +32,18 @@ def run_subprocess_request(url: str, headers: dict, output_file: str) -> None:
 def main(auth_token: str):
     base_url = "https://sbb.splunkcloud.com:8089/services/search/jobs/export/"
 
-    for day in range(1):
+
+    # Get current date
+    current_date = datetime.now()
+    
+    # Loop through last 30 days
+    for i in range(5):
+        datePlus = current_date - timedelta(days=i)
+        date = current_date - timedelta(days=i+1)
         head = {'Authorization': 'Bearer {}'.format(auth_token)} #Authorization: Bearer
-        url = f'{base_url}?output_mode=csv&search=search index=sbb_journey-service_internal_prod_events "Analytics" &earliest_time=2024-11-{day+28}T00%3A00%3A00.000-02%3A00&latest_time=2024-11-{day+1+28}T00%3A00%3A00.000-02%3A00&loglevel=INFO'
+        url = f'{base_url}?output_mode=csv&search=search index=sbb_journey-service_internal_prod_events "Analytics" &earliest_time={date.year}-{date.month}-{date.day}T00%3A00%3A00.000-02%3A00&latest_time={datePlus.year}-{datePlus.month}-{datePlus.day}T00%3A00%3A00.000-02%3A00&loglevel=INFO'
         print(url)
-        output_filename = f'./download/output20241128'
+        output_filename = f'./download/output{date.year}{date.month}{date.day}'
         response = requests.get(url, headers=head)
 
         if response.status_code == 200:
