@@ -1,4 +1,5 @@
 import os
+import shutil
 import pandas as pd
 from multiprocessing import Pool
 import re
@@ -36,25 +37,18 @@ def process_file(file_path):
     results = []
     with open(file_path, 'r', encoding='utf-8', errors='ignore') as file:
         for line in file:
-            match = re.search(r'Analytics#(.+?)(?:\s|$)', line)
-            if match:
-                results.append(match.group(1).split('#'))
-            legs_dict = json.loads(str(results[7]).replace("'", '"'))
-            for key, value in legs_dict.items():
-                fps_analytics_dict.keys[]
-            fps_analytics_dict.append(legs_dict) #Add to dictionary with the count.
+            results.append(line.split('#'))
     dd = pd.DataFrame(results)
-    dd.to_csv(file.name+'_results.csv', index=False)
-    # {"8503000|8503206|8503283":4,"8503000|8503206|8503286|8503283":1}
-
+    # change file path to data for the results dirty.
+    filename = file.name.replace('download', 'data')
+    dd.to_csv(f'{filename}_pandas.csv', index=False)
     return dd
 
 def read_data_files():
-    data_folder = 'data'
-    # Get list of all file paths
+    data_folder = 'download'
+    # Get list of all csv file paths
     file_paths = [os.path.join(data_folder, f) for f in os.listdir(data_folder) 
-                 if os.path.isfile(os.path.join(data_folder, f))]
-    
+                 if os.path.isfile(os.path.join(data_folder, f)) and f.endswith('.csv')]    
     # Create pool and map files to processes
     with Pool() as pool:
         dfs = pool.map(process_file, file_paths)
@@ -65,6 +59,11 @@ def read_data_files():
 def main():
     fps_analytics_df = pd.DataFrame(columns=columns)
 
+    # Delete the content in folder data before running this script.
+    if os.path.exists('data'):
+        shutil.rmtree('data')
+    os.makedirs('data', exist_ok=True)
+
     # Read all data files
     fps_analytics_df = read_data_files()
     
@@ -74,7 +73,7 @@ def main():
     print(f"\nTotal records: {len(fps_analytics_df)}")
 
     # Save to CSV
-    fps_analytics_df.to_csv('fps_analytics_results.csv', index=False)
+    fps_analytics_df.to_csv('./data/fps_analytics_pandas.csv', index=False)
 
 if __name__ == "__main__":
     main()
