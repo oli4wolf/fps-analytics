@@ -1,0 +1,5 @@
+run.py
+download/*
+data/*
+testdata/*
+__pycache__/*
