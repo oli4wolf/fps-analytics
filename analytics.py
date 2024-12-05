@@ -1,9 +1,8 @@
 import os
 import shutil
 import pandas as pd
+import logging
 from multiprocessing import Pool
-import re
-import json
 
 '''
 log.info("Analytics#{}#{}#{}#{}#{}#{}#{}#{}#{}",
@@ -68,9 +67,9 @@ def main():
     fps_analytics_df = read_data_files()
     
     # Display results
-    print("Analytics DataFrame:")
-    print(fps_analytics_df.head())
-    print(f"\nTotal records: {len(fps_analytics_df)}")
+    logging.info("Analytics DataFrame:")
+    logging.info(fps_analytics_df.head())
+    logging.info(f"\nTotal records: {len(fps_analytics_df)}")
 
     # Save to CSV
     fps_analytics_df.to_csv('./data/fps_analytics_pandas.csv', index=False)
