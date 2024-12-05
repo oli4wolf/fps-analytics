@@ -1,43 +1,18 @@
 import requests
-import concurrent.futures
+import logging
 
 from datetime import datetime, timedelta
 
 from regexFilter import extract_data
 
-#Unused function
-def run_subprocess_request(url: str, headers: dict, output_file: str) -> None:
-    try:
-        # Using concurrent requests
-        with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
-            future = executor.submit(requests.get, url, headers=headers)
-            response = future.result()
-            
-            if response.status_code == 200:
-                with open(output_file, 'w', encoding='utf-8') as f:
-                    f.write(response.text)
-            else:
-                print(f"Error: Status code {response.status_code}")
-                with open(f'{output_file}-Error-{response.status_code}.txt', 'w', encoding='utf-8') as f:
-                    f.write(response.text)
-                    
-        return response
-    except concurrent.futures.TimeoutError:
-        print("Request timed out")
-        return None
-    except requests.RequestException as e:
-        print(f"Request error: {e}")
-        return None
-
-def main(auth_token: str):
+def main(auth_token: str, days: int):
     base_url = "https://sbb.splunkcloud.com:8089/services/search/jobs/export/"
-
 
     # Get current date
     current_date = datetime.now()
     
-    # Loop through last 30 days
-    for i in range(5):
+    # Loop through last X days
+    for i in range(days):
         datePlus = current_date - timedelta(days=i)
         date = current_date - timedelta(days=i+1)
         head = {'Authorization': 'Bearer {}'.format(auth_token)} #Authorization: Bearer
@@ -61,6 +36,8 @@ def main(auth_token: str):
 if __name__ == "__main__":
     import sys
     if len(sys.argv) > 1:
-        main(sys.argv[1])
+        main(sys.argv[1],1)
+    elif len(sys.argv) > 2:
+        main(sys.argv[1],sys.argv[2])
     else:
-        print("Please provide auth_token")
+        print("Please provide auth_token, optional: days")
