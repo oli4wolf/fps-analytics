@@ -35,6 +35,7 @@ def main(auth_token: str, days: int):
             logging.error(response.text)
             with open(f'{output_filename}-Error-{response.status_code}.txt', 'w', encoding='utf-8') as f:
                 f.write(response.text)
+    return 0
 
 if __name__ == "__main__":
     import sys

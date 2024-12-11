@@ -31,12 +31,35 @@ columns = [
         'route_prospection'
 ]
 fps_analytics_dict = {}
+uic = pd.read_csv('dienststelle2.csv', sep = ';', encoding='utf-8', dtype={
+    'uic': 'string',
+    'name': 'string',
+    'lat': 'float64',
+    'lon': 'float64'
+})
+
+#Return lat long if uic is known else return the value.
+def replace_bp(value: str):
+    try:
+        res = uic[uic['uic']==value]
+        return f'{res.lon.values[0]},{res.lat.values[0]}'
+    except (ValueError, IndexError):
+        return value
+    
+def replace_first_column(result):
+    for i, value in enumerate(result):
+        if value != None:
+            result[i] = replace_bp(value)
+    return result
 
 def process_file(file_path):
     results = []
     with open(file_path, 'r', encoding='utf-8', errors='ignore') as file:
         for line in file:
-            results.append(line.split('#'))
+            if line != None:
+                result = replace_first_column(line.split('#'))
+                if result != None:
+                    results.append(result)
     dd = pd.DataFrame(results)
     # change file path to data for the results dirty.
     filename = file.name.replace('download', 'data')
@@ -48,15 +71,21 @@ def read_data_files():
     # Get list of all csv file paths
     file_paths = [os.path.join(data_folder, f) for f in os.listdir(data_folder) 
                  if os.path.isfile(os.path.join(data_folder, f)) and f.endswith('.csv')]    
-    # Create pool and map files to processes
+    
     with Pool() as pool:
         dfs = pool.map(process_file, file_paths)
     
     # Combine all dataframes
     return pd.concat(dfs, ignore_index=True)
+    
+    # Combine all dataframes
+    return pd
 
 def main():
     fps_analytics_df = pd.DataFrame(columns=columns)
+
+    # Load lon lat bp-uic.
+    uic = pd.read_csv('dienststelle2.csv', sep = ';')
 
     # Delete the content in folder data before running this script.
     if os.path.exists('data'):
